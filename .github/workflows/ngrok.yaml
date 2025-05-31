@@ -1,0 +1,19 @@
+name: Test ngrok URL
+
+on:
+  workflow_dispatch:  # Manually trigger from GitHub UI
+
+jobs:
+  test-ngrok:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if ngrok URL is reachable
+        run: |
+          echo "🔍 Testing ngrok URL: https://9d30-122-171-22-44.ngrok-free.app"
+          curl -I --max-time 10 https://9d30-122-171-22-44.ngrok-free.app || exit 1
+
+      - name: Verify content
+        run: |
+          echo "🧪 Checking response content"
+          curl -s https://9d30-122-171-22-44.ngrok-free.app | head -n 10
