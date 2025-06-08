@@ -1,0 +1,22 @@
+name: Test SSH to VM
+
+on:
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  test-ssh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Test SSH connection
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 127.0.0.1
+          port: 2222
+          username: torres           # replace with your VM username
+          key: ${{ secrets.CLICKHOUSEVMSECRET }}
+          script: |
+            echo "✅ SSH successful!"
+            uname -a
+            whoami
+            uptime

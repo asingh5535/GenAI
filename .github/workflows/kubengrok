@@ -1,0 +1,57 @@
+
+name: Deploy NGINX to Minikube via ngrok
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install kubectl
+      uses: azure/setup-kubectl@v3
+      with:
+        version: latest
+
+    - name: Decode and write kubeconfig
+      run: |
+        echo "${{ secrets.KUBECONFIGNGROK }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+
+    - name: Test cluster access
+      run: |
+        export KUBECONFIG=$PWD/kubeconfig
+        kubectl cluster-info
+        kubectl get nodes
+
+    - name: Deploy NGINX
+      run: |
+        export KUBECONFIG=$PWD/kubeconfig
+        kubectl apply -f - <<EOF
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: nginx
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: nginx
+          template:
+            metadata:
+              labels:
+                app: nginx
+            spec:
+              containers:
+              - name: nginx
+                image: nginx:latest
+                ports:
+                - containerPort: 80
+        EOF
+
+    - name: Expose NGINX service
+      run: |
+        export KUBECONFIG=$PWD/kubeconfig
+        kubectl expose deployment nginx --type=NodePort --port=80
+        kubectl get svc nginx
